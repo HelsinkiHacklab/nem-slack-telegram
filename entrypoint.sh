@@ -8,8 +8,4 @@ config="${config//\%telegram-api-key\%/$TELEGRAM_KEY}";
 printf '%s\n' "$config" >config.ini
 
 
-config=$(<bridge.py);
-config="${config//SLACK_CHANNEL_MATCHING = \{*-146980320\}/SLACK_CHANNEL_MATCHING = \{$SLACK_CHANNELS\}}";
-printf '%s\n' "$config" >bridge.py
-
 exec "$@"
