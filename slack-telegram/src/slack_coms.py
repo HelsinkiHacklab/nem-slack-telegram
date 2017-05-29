@@ -3,11 +3,12 @@ Created on 26.09.2015
 
 @author: root
 '''
-import time
-import json
-import re
 import HTMLParser
+import json
 import logging
+import re
+import time
+
 from slackclient import SlackClient
 
 
@@ -48,21 +49,21 @@ class SlackManager():
     def prep_message(self, update):
         try:
             logging.debug("update: {}".format(repr(update)))
-            #get user data
+            # get user data
             user = self._resolve_user(update['user'])
             update['user'] = user  # user is a dict now
 
-            #resolve mentionings
+            # resolve mentionings
             marked_users = set([m.group(1) for m in
-                                            re.finditer('<@([A-Z0-9]+)>',
-                                                        update['text'])])
+                                re.finditer('<@([A-Z0-9]+)>',
+                                            update['text'])])
             for marked_user in marked_users:
                 username = self._resolve_user(marked_user)['name']
                 update['text'] = update['text'].replace(marked_user,
                                                         username)
-            #replace emos
+            # replace emos
             update['text'] = self.replace_emos(update['text'])
-            #remove channel code from name
+            # remove channel code from name
             update['text'] = self.clean_channel_name(update['text'])
             update['text'] = self.clean_html_entities(update['text'])
         except Exception, e:
@@ -81,12 +82,12 @@ class SlackManager():
                     try:
                         updates = self.bot.rtm_read()
                         for update in updates:
-                            #print 'Received from slack', update
+                            # print 'Received from slack', update
                             if update.get('subtype') == 'bot_message':
-                                #msg from a bot - move on
+                                # msg from a bot - move on
                                 continue
                             if not update.get('text'):
-                                #no text = move on
+                                # no text = move on
                                 continue
                             else:
                                 update = self.prep_message(update)
@@ -117,28 +118,28 @@ class SlackManager():
                 logging.debug(update.message.text)
                 message = update.message.text.encode('utf-8')
 
-                #resolve quotes
+                # resolve quotes
                 if update.message.reply_to_message:
                     reply_to_message = update.message.reply_to_message.text.encode('utf-8')
                     reply_to_message = reply_to_message.replace('\n', '\n>')
                     message = '>%s:\n>%s\n%s' % (update.message.reply_to_message.from_user.username,
-                                               reply_to_message,
-                                               message)
+                                                 reply_to_message,
+                                                 message)
 
                 avatar = update.message.from_user.avatar
                 # avatar = 'https://telegram.org/img/t_logo.png'
-                #weird issue that makes slack display wrong icons so fuck it
+                # weird issue that makes slack display wrong icons so fuck it
 
                 username = update.message.from_user.username
                 if(username == ""):
                     username = update.message.from_user.first_name
 
                 self.bot.api_call('chat.postMessage',
-                                channel=channel,
-                                text=message,
-                                username=username,
-                                icon_url=avatar
-                                )
+                                  channel=channel,
+                                  text=message,
+                                  username=username,
+                                  icon_url=avatar
+                                  )
             except Exception, e:
                 logging.exception("Slack forward fail")
                 time.sleep(5)
@@ -149,6 +150,6 @@ class SlackManager():
         diagnostics will go through even if thread dies
         '''
         self.bot.api_call('chat.postMessage',
-                        channel=channel,
-                        text=message,
-                        username=user)
+                          channel=channel,
+                          text=message,
+                          username=user)

@@ -3,10 +3,11 @@ Created on 26.09.2015
 
 @author: root
 '''
-import telegram
-import time
-import logging
 import json
+import logging
+import time
+
+import telegram
 
 
 class TelegramManager():
@@ -46,7 +47,7 @@ class TelegramManager():
                         update.message.text = self.download_file(update.message.photo[-1].file_id).file_path
                     if update.message.document:
                         update.message.text = self.download_file(update.message.document.file_id).file_path
-                    #get avatar
+                    # get avatar
                     avatar = self.download_avatar(update.message.from_user.id)
                     update.message.from_user.avatar = avatar
                     logging.debug('Queued: %s' % update)
@@ -78,8 +79,8 @@ class TelegramManager():
                     continue
                 message = '*%s*\n%s' % (username, update['text'])
                 self.bot.sendMessage(chat_id=channel,
-                                        text=message,
-                                        parse_mode="Markdown")
+                                     text=message,
+                                     parse_mode="Markdown")
             except Exception, e:
                 logging.exception("TG forward fail")
                 time.sleep(5)
