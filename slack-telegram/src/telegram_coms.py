@@ -80,5 +80,5 @@ class TelegramManager():
                                         text=message,
                                         parse_mode="Markdown")
             except Exception, e:
-                logging.error(str(e))
+                logging.exception()
                 time.sleep(5)

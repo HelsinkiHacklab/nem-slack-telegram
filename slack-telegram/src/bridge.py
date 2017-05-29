@@ -8,14 +8,38 @@ import threading
 import time
 import ConfigParser
 import logging
+import logging.config
 from slack_coms import SlackManager
 from telegram_coms import TelegramManager
 
-logging.basicConfig(filename='bridge.log',
-                    format='%(levelname)s: %(asctime)s %(message)s in %(module)s on line %(lineno)d',
-                    level=logging.ERROR)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
 
-#logging.getLogger().addHandler(logging.StreamHandler())
+    'formatters': {
+        'console': {
+            'format': '[%(asctime)s][%(levelname)s] %(name)s '
+                      '%(pathname)s:%(funcName)s:%(lineno)d | %(message)s',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+
+    'loggers': {
+        '': {
+            'handlers': ['console', ],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    }
+}
+logging.config.dictConfig(LOGGING)
 
 Config = ConfigParser.ConfigParser()
 Config.read("config.ini")
@@ -24,14 +48,9 @@ SLACK_TOKEN = Config.get('Token', 'Slack')
 TELEGRAM_TOKEN = Config.get('Token', 'Telegram')
 
 
-SLACK_CHANNEL_MATCHING = {'G0BCJ6A11': -1001084987188,
-                             'G085E7UF2': -1001038858387,
-                             'G0C7PQQ5V': -11209025,
-                             'G0K754RGB': -1001094091790,
-                             'G0K7MCCTU': -87276436,
-                             'C0402EBV4': -105936925,
-                             'G1E69LH60': -146980320}
-
+SLACK_CHANNEL_MATCHING = {
+    'C5K4S3JKE': -1001106499126,
+}
 TELEGRAM_CHANNEL_MATCHING = {tel_channel: slack_channel for slack_channel,
                           tel_channel in SLACK_CHANNEL_MATCHING.items()}
 
@@ -83,8 +102,7 @@ if __name__ == '__main__':
             message = 'Running Threads: ' + ', '.join(thread.name for
                                                      thread in
                                                      threading.enumerate())
-            slack.post_to_slack(message, 'diagnostics',
-                                     'pats-testing-range')
+#            slack.post_to_slack(message, 'diagnostics', 'pats-testing-range')
             time.sleep(60 * 60 * 24)
         except KeyboardInterrupt:
             raise
