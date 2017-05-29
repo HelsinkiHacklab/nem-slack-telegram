@@ -20,7 +20,7 @@ class SlackManager():
         self.emo_matching = emo_matching
 
     def _resolve_user(self, uid):
-        user = self.bot.api_call('users.info', user=uid)
+        user = json.loads(self.bot.api_call('users.info', user=uid))
         return user['user']
 
     def replace_emos(self, text):
@@ -47,6 +47,7 @@ class SlackManager():
 
     def prep_message(self, update):
         try:
+            logging.debug("update: {}".format(repr(update)))
             #get user data
             user = self._resolve_user(update['user'])
             update['user'] = user  # user is a dict now
@@ -65,7 +66,7 @@ class SlackManager():
             update['text'] = self.clean_channel_name(update['text'])
             update['text'] = self.clean_html_entities(update['text'])
         except Exception, e:
-            logging.error(str(e))
+            logging.exception("Prep fail")
         return update
 
     def listen_to_slack(self, queue):
@@ -93,7 +94,7 @@ class SlackManager():
                                 queue.put(update)
                             time.sleep(1)
                     except Exception, e:
-                        logging.error(str(e))
+                        logging.exception("Slack listen fail")
                         break
             else:
                 logging.error('Failed to establish a connection to Slack!')
@@ -139,7 +140,7 @@ class SlackManager():
                                 icon_url=avatar
                                 )
             except Exception, e:
-                logging.error(str(e))
+                logging.exception("Slack forward fail")
                 time.sleep(5)
 
     def post_to_slack(self, message, user, channel):

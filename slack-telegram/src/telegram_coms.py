@@ -25,7 +25,7 @@ class TelegramManager():
         except IndexError:
             logging.info("no avatar found")
         except Exception, e:
-            logging.error(str(e))
+            logging.exception("Avatar DL fail")
             return None
 
     def listen_to_telegram(self, queue):
@@ -54,7 +54,7 @@ class TelegramManager():
                     last_update = update['update_id']
                 time.sleep(1)
             except Exception, e:
-                logging.error(str(e))
+                logging.exception("TG listen fail")
                 time.sleep(5)
 
     def forward_to_telegram(self, queue):
@@ -66,6 +66,7 @@ class TelegramManager():
         while True:
             try:
                 update = queue.get()
+                logging.debug("update: {}".format(repr(update)))
                 try:
                     username = update['user']['name']
                 except KeyError:
@@ -80,5 +81,5 @@ class TelegramManager():
                                         text=message,
                                         parse_mode="Markdown")
             except Exception, e:
-                logging.exception()
+                logging.exception("TG forward fail")
                 time.sleep(5)
