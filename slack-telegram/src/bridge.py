@@ -49,6 +49,7 @@ SLACK_TOKEN = Config.get('Token', 'Slack')
 TELEGRAM_TOKEN = Config.get('Token', 'Telegram')
 
 
+SLACK_PASS_BOTS = [u'B4ZFJAJCW']
 SLACK_CHANNEL_MATCHING = {
     'C5K4S3JKE': -1001106499126,
 }
@@ -62,7 +63,7 @@ SLACK_EMO_MATCHING = {':stuck_out_tongue:': ':P',
                       ':wink:': ';)', }
 
 slack = SlackManager(SLACK_TOKEN, TELEGRAM_CHANNEL_MATCHING,
-                     SLACK_EMO_MATCHING)
+                     SLACK_EMO_MATCHING, SLACK_PASS_BOTS)
 telegram = TelegramManager(TELEGRAM_TOKEN, SLACK_CHANNEL_MATCHING)
 
 '''Queues are used to pass information between Threads. Duh!'''
@@ -103,9 +104,10 @@ if __name__ == '__main__':
             message = 'Running Threads: ' + ', '.join(thread.name for
                                                       thread in
                                                       threading.enumerate())
-#            slack.post_to_slack(message, 'diagnostics', 'pats-testing-range')
+            logging.info(message)
+            # Wait a day before reposting the message
             time.sleep(60 * 60 * 24)
         except KeyboardInterrupt:
             raise
-        except Exception, e:
+        except Exception as e:
             logging.error(str(e))

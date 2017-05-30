@@ -14,8 +14,9 @@ from slackclient import SlackClient
 
 class SlackManager():
 
-    def __init__(self, token, channel_matching, emo_matching=None,
+    def __init__(self, token, channel_matching, emo_matching=None, pass_bots=[],
                  *args, **kwargs):
+        self.pass_bots = pass_bots
         self.bot = SlackClient(token)
         self.channel_matching = channel_matching
         self.emo_matching = emo_matching
@@ -48,9 +49,15 @@ class SlackManager():
 
     def prep_message(self, update):
         try:
-            logging.debug("update: {}".format(repr(update)))
             # get user data
-            user = self._resolve_user(update['user'])
+            if update.get('user', False):
+                user = self._resolve_user(update['user'])
+            else:
+                # bot
+                user = {
+                    u'name': update.get('username', None),
+                }
+
             update['user'] = user  # user is a dict now
 
             # resolve mentionings
@@ -66,7 +73,7 @@ class SlackManager():
             # remove channel code from name
             update['text'] = self.clean_channel_name(update['text'])
             update['text'] = self.clean_html_entities(update['text'])
-        except Exception, e:
+        except Exception as e:
             logging.exception("Prep fail")
         return update
 
@@ -82,8 +89,9 @@ class SlackManager():
                     try:
                         updates = self.bot.rtm_read()
                         for update in updates:
-                            # print 'Received from slack', update
-                            if update.get('subtype') == 'bot_message':
+                            logging.debug("update from slack: {}".format(repr(update)))
+                            if (update.get('subtype') == 'bot_message'
+                                    and update.get('bot_id', False) not in self.pass_bots):
                                 # msg from a bot - move on
                                 continue
                             if not update.get('text'):
@@ -94,7 +102,7 @@ class SlackManager():
                                 logging.debug('Queued: %s' % update)
                                 queue.put(update)
                             time.sleep(1)
-                    except Exception, e:
+                    except Exception as e:
                         logging.exception("Slack listen fail")
                         break
             else:
@@ -140,7 +148,7 @@ class SlackManager():
                                   username=username,
                                   icon_url=avatar
                                   )
-            except Exception, e:
+            except Exception as e:
                 logging.exception("Slack forward fail")
                 time.sleep(5)
 
