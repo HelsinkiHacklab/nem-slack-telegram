@@ -25,7 +25,7 @@ class TelegramManager():
             return self.download_file(file_id).file_path
         except IndexError:
             logging.info("no avatar found")
-        except Exception, e:
+        except Exception as e:
             logging.exception("Avatar DL fail")
             return None
 
@@ -54,7 +54,7 @@ class TelegramManager():
                     queue.put(update)
                     last_update = update['update_id']
                 time.sleep(1)
-            except Exception, e:
+            except Exception as e:
                 logging.exception("TG listen fail")
                 time.sleep(5)
 
@@ -81,6 +81,6 @@ class TelegramManager():
                 self.bot.sendMessage(chat_id=channel,
                                      text=message,
                                      parse_mode="Markdown")
-            except Exception, e:
+            except Exception as e:
                 logging.exception("TG forward fail")
                 time.sleep(5)
